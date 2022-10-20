@@ -10,5 +10,11 @@ func routes(_ app: Application) throws {
         "Hello, world!"
     }
 
+    app.get("createFood") { req async in
+        let food = Food()
+        food.name = "Food"
+        return "HI"
+    }
+
 //    try app.register(collection: TodoController())
 }

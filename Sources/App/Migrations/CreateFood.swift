@@ -9,19 +9,21 @@ struct CreateFood: AsyncMigration {
             .field("detail", .string)
             .field("brand", .string)
         
-            .field("amount_double", .double, .required)
-            .field("amount_unit", .int16, .required)
-            .field("amount_weight_unit", .int16)
-            .field("amount_volume_unit", .int16)
-            .field("amount_size_unit_id", .uuid)
-            .field("amount_size_unit_volume_prefix_unit", .int16)
+            .field("amount", .json, .required)
+//            .field("amount_double", .double, .required)
+//            .field("amount_unit", .int16, .required)
+//            .field("amount_weight_unit", .int16)
+//            .field("amount_volume_unit", .int16)
+//            .field("amount_size_unit_id", .uuid)
+//            .field("amount_size_unit_volume_prefix_unit", .int16)
         
-            .field("serving_double", .double, .required)
-            .field("serving_unit", .int16, .required)
-            .field("serving_weight_unit", .int16)
-            .field("serving_volume_unit", .int16)
-            .field("serving_size_unit_id", .uuid)
-            .field("serving_size_unit_volume_prefix_unit", .int16)
+            .field("serving", .json, .required)
+//            .field("serving_double", .double, .required)
+//            .field("serving_unit", .int16, .required)
+//            .field("serving_weight_unit", .int16)
+//            .field("serving_volume_unit", .int16)
+//            .field("serving_size_unit_id", .uuid)
+//            .field("serving_size_unit_volume_prefix_unit", .int16)
         
             .field("energy", .double, .required)
             .field("carb", .double, .required)
@@ -35,10 +37,13 @@ struct CreateFood: AsyncMigration {
         
             .field("barcodes", .array(of: .dictionary(of: .int16)))
 
-            .field("density_weight_double", .double)
-            .field("density_weight_unit", .int16)
-            .field("density_volume_double", .double)
-            .field("density_volume_unit", .int16)
+            .field("sizes", .array(of: .json), .required)
+        
+            .field("density", .json)
+//            .field("density_weight_double", .double)
+//            .field("density_weight_unit", .int16)
+//            .field("density_volume_double", .double)
+//            .field("density_volume_unit", .int16)
         
             .create()
     }

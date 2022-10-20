@@ -1,21 +1,20 @@
 import Fluent
 import Vapor
 
-final class AmountWithUnit: Fields {
-    @Field(key: "double") var double: Double
-    @Field(key: "unit") var unit: Int16
-    @OptionalField(key: "weight_unit") var weightUnit: Int16?
-    @OptionalField(key: "volume_unit") var volumeUnit: Int16?
-    @OptionalField(key: "size_unit_id") var sizeUnitId: UUID?
-    @OptionalField(key: "size_unit_volume_prefix_explicit_unit") var sizeUnitVolumePrefixUnit: Int16?
-    init() { }
+struct AmountWithUnit: Codable {
+    var double: Double
+    var unit: Int16
+    var weightUnit: Int16?
+    var volumeUnit: Int16?
+    var sizeUnitId: UUID?
+    var sizeUnitVolumePrefixUnit: Int16?
 }
 
-final class Density: Fields {
-    @OptionalField(key: "weight_double") var weightDouble: Double?
-    @OptionalField(key: "weight_unit") var weightUnit: Int16?
-    @OptionalField(key: "volume_double") var volumeDouble: Double?
-    @OptionalField(key: "volume_unit") var volumeUnit: Int16?
+struct Density: Codable {
+    var weightDouble: Double
+    var weightUnit: Int16
+    var volumeDouble: Double
+    var volumeUnit: Int16
 }
 
 struct Barcode: Codable {
@@ -26,6 +25,19 @@ struct Barcode: Codable {
 struct Micronutrient: Codable {
     var name: String
     var amount: Double
+}
+
+struct Size: Codable {
+    var id: UUID
+    var name: String
+    var quantity: Double
+    var volumePrefixUnit: Int16?
+    var amount: Double
+    var unit: Int16
+    var weightUnit: Int16?
+    var volumeUnit: Int16?
+    var sizeUnitId: UUID?
+    var sizeUnitVolumePrefixUnit: Int16?
 }
 
 final class Food: Model, Content {
@@ -39,8 +51,8 @@ final class Food: Model, Content {
     @OptionalField(key: "detail") var detail: String?
     @OptionalField(key: "brand") var brand: String?
     
-    @Group(key: "amount") var amount: AmountWithUnit
-    @Group(key: "serving") var serving: AmountWithUnit
+    @Field(key: "amount") var amount: AmountWithUnit
+    @Field(key: "serving") var serving: AmountWithUnit
    
     @Field(key: "energy") var energy: Double
     @Field(key: "carb") var carb: Double
@@ -48,8 +60,9 @@ final class Food: Model, Content {
     @Field(key: "protein") var protein: Double
 
     @Field(key: "micronutrients") var micronutrients: [Micronutrient]
-
-    @Group(key: "density") var density: Density
+    
+    @Field(key: "sizes") var sizes: [Size]
+    @OptionalField(key: "density") var density: Density?
    
     @OptionalField(key: "link_url") var linkeUrl: String?
     @OptionalField(key: "prefilled_url") var prefilled_url: String?
