@@ -26,7 +26,7 @@ struct CreateFood: AsyncMigration {
             .field("barcodes", .array(of: .dictionary(of: .int16)))
 
             .field("amount", .json, .required)
-            .field("serving", .json, .required)
+            .field("serving", .json)
             .field("nutrients", .json, .required)
             .field("sizes", .array(of: .json), .required)
             .field("density", .json)

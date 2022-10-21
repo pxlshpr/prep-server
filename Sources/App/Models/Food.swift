@@ -29,7 +29,7 @@ final class Food: Model, Content {
     @OptionalField(key: "brand") var brand: String?
 
     @Field(key: "amount") var amount: ServerAmountWithUnit
-    @Field(key: "serving") var serving: ServerAmountWithUnit
+    @Field(key: "serving") var serving: ServerAmountWithUnit?
     @Field(key: "nutrients") var nutrients: ServerNutrients
     @Field(key: "sizes") var sizes: [ServerSize]
     @OptionalField(key: "density") var density: ServerDensity?
