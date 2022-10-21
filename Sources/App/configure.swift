@@ -18,6 +18,8 @@ public func configure(_ app: Application) throws {
 //    app.migrations.add(CreateSize())
     app.migrations.add(CreateFood())
 
+    app.http.server.configuration.port = 8083
+
     // register routes
     try routes(app)
 }
