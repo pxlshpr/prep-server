@@ -20,6 +20,10 @@ struct CreateFood: AsyncMigration {
             .field("prefilled_url", .string)
             .field("image_ids", .array(of: .uuid))
         
+            .field("type", .int16, .required)
+            .field("verification_status", .int16)
+            .field("database", .int16)
+        
             .create()
     }
     

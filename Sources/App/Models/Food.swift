@@ -6,7 +6,7 @@ final class Food: Model, Content {
     static let schema = "foods"
     
     @ID(key: .id) var id: UUID?
-
+    
     @Field(key: "name") var name: String
     @Field(key: "emoji") var emoji: String
     @OptionalField(key: "detail") var detail: String?
@@ -22,6 +22,10 @@ final class Food: Model, Content {
     @OptionalField(key: "link_url") var linkUrl: String?
     @OptionalField(key: "prefilled_url") var prefilledUrl: String?
     @OptionalField(key: "image_ids") var imageIds: [UUID]?
+
+    @Field(key: "type") var type: Int16
+    @OptionalField(key: "verification_status") var verificationStatus: Int16?
+    @OptionalField(key: "database") var database: Int16?
 
     init() { }
 
