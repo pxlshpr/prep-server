@@ -1,6 +1,45 @@
 import Fluent
 import Vapor
 
+struct FoodController: RouteCollection {
+    func boot(routes: RoutesBuilder) throws {
+        let foods = routes.grouped("foods")
+        foods.on(.POST, "image", body: .collect(maxSize: "20mb"), use: image)
+        foods.get(use: index)
+        foods.post(use: create)
+        
+        //        foods.group(":foodId") { food in
+        //            food.delete(use: delete)
+        //        }
+    }
+    
+    func image(req: Request) async throws -> String {
+        let image = try req.content.decode(Image.self)
+        saveImage(image, to: .repository)
+        return ""
+    }
+    
+    func create(req: Request) async throws -> Food {
+        let food = try req.content.decode(Food.self)
+        try await food.save(on: req.db)
+        return food
+    }
+    
+    func index(req: Request) async throws -> [Food] {
+        try await Food.query(on: req.db)
+            .all()
+    }
+    //
+    //
+    //    func delete(req: Request) async throws -> HTTPStatus {
+    //        guard let food = try await Food.find(req.parameters.get("foodId"), on: req.db) else {
+    //            throw Abort(.notFound)
+    //        }
+    //        try await food.delete(on: req.db)
+    //        return .noContent
+    //    }
+}
+
 struct Image: Content {
     var id: String
     var data: Data
@@ -58,42 +97,4 @@ extension Data {
         bcf.countStyle = .file
         return bcf.string(fromByteCount: Int64(count))
     }
-}
-
-struct FoodController: RouteCollection {
-    func boot(routes: RoutesBuilder) throws {
-        let foods = routes.grouped("foods")
-        foods.on(.POST, "image", body: .collect(maxSize: "20mb"), use: image)
-        //        foods.get(use: index)
-        foods.post(use: create)
-        
-        //        foods.group(":foodId") { food in
-        //            food.delete(use: delete)
-        //        }
-    }
-    
-    func image(req: Request) async throws -> String {
-        let image = try req.content.decode(Image.self)
-        saveImage(image, to: .repository)
-        return ""
-    }
-    
-    func create(req: Request) async throws -> Food {
-        let food = try req.content.decode(Food.self)
-        try await food.save(on: req.db)
-        return food
-    }
-    
-    //    func index(req: Request) async throws -> [Food] {
-    //        try await Food.query(on: req.db).all()
-    //    }
-    //
-    //
-    //    func delete(req: Request) async throws -> HTTPStatus {
-    //        guard let food = try await Food.find(req.parameters.get("foodId"), on: req.db) else {
-    //            throw Abort(.notFound)
-    //        }
-    //        try await food.delete(on: req.db)
-    //        return .noContent
-    //    }
 }
