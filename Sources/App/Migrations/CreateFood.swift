@@ -1,5 +1,20 @@
 import Fluent
 
+struct CreateBarcode: AsyncMigration {
+    func prepare(on database: Database) async throws {
+        try await database.schema("barcodes")
+            .field("payload", .string)
+            .field("symbology", .int16)
+            .field("food_id", .uuid, .required, .references(Food.schema, .id))
+
+            .create()
+    }
+    
+    func revert(on database: Database) async throws {
+        try await database.schema("barcodes").delete()
+    }
+}
+
 struct CreateFood: AsyncMigration {
     func prepare(on database: Database) async throws {
         try await database.schema("foods")
