@@ -82,6 +82,15 @@
       }
     },
     {
+      "identity" : "prepunits",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pxlshpr/PrepUnits",
+      "state" : {
+        "revision" : "aa8df396bf4e88019b0f7da123ba190d879cd345",
+        "version" : "0.0.82"
+      }
+    },
+    {
       "identity" : "routing-kit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/routing-kit.git",
@@ -214,6 +223,15 @@
       "state" : {
         "revision" : "0a5bc04095a675662cf24757cc0640aa2204253b",
         "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "swiftsugar",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pxlshpr/SwiftSugar",
+      "state" : {
+        "revision" : "485228890dcef83c325b20cad33d1bf47b3e9c43",
+        "version" : "0.0.62"
       }
     },
     {
