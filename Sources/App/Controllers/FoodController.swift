@@ -86,7 +86,12 @@ extension FoodSearchResponse: Content {
 
 extension FoodSearchResult {
     init(_ food: Food) {
-        let id = food.id ?? UUID()
-        self.init(id: id, name: food.name)
+        self.init(
+            id: food.id ?? UUID(),
+            name: food.name,
+            emoji: food.emoji,
+            detail: food.detail,
+            brand: food.brand
+        )
     }
 }
