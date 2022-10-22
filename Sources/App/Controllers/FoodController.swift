@@ -53,6 +53,7 @@ struct FoodController: RouteCollection {
     
     func index(req: Request) async throws -> Page<FoodSearchResult> {
         try await Food.query(on: req.db)
+            .sort(\.$name)
             .paginate(for: req)
             .map({ food in
                 FoodSearchResult(food)
