@@ -51,9 +51,15 @@ struct FoodController: RouteCollection {
         return food
     }
     
-    func index(req: Request) async throws -> FoodSearchResponse {
-        let results = try await Food.query(on: req.db).all().compactMap { FoodSearchResult($0) }
-        return FoodSearchResponse(results: results, page: 1, hasMorePages: false)
+    func index(req: Request) async throws -> Page<FoodSearchResult> {
+        try await Food.query(on: req.db)
+            .paginate(for: req)
+            .map({ food in
+                FoodSearchResult(food)
+            })
+        
+//        try await Planet.query(on: req.db).paginate(for: req)
+//        return FoodSearchResponse(results: results, page: 1, hasMorePages: false)
     }
 //
 //
@@ -78,8 +84,8 @@ extension FoodSearchResponse: Content {
 }
 
 extension FoodSearchResult {
-    init?(_ food: Food) {
-        guard let id = food.id else { return nil }
+    init(_ food: Food) {
+        let id = food.id ?? UUID()
         self.init(id: id, name: food.name)
     }
 }
