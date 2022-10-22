@@ -38,7 +38,8 @@ struct CreateFood: AsyncMigration {
             .field("type", .int16, .required)
             .field("verification_status", .int16)
             .field("database", .int16)
-        
+            .field("database_food_id", .string)
+
             .create()
     }
     
