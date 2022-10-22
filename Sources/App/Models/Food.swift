@@ -41,7 +41,7 @@ final class Food: Model, Content {
     @Field(key: "type") var type: Int16
     @OptionalField(key: "verification_status") var verificationStatus: Int16?
     @OptionalField(key: "database") var database: Int16?
-    @OptionalField(key: "databaseFoodId") var databaseFoodId: String?
+    @OptionalField(key: "database_food_id") var databaseFoodId: String?
 
     @Children(for: \.$food) var barcodes: [Barcode]
     
