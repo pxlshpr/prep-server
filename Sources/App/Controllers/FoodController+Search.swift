@@ -42,8 +42,9 @@ struct SearchResultsProvider {
         print ("    Getting \(whatWillBeProvided) foods offset by \(weNeedToStartAt)")
         return try await query
             .filter(\.$id !~ previousResults.ids)
-            .sort(\.$name)
-            .sort(\.$id)
+//            .sort(.sql(raw: "CHAR_LENGTH(CONCAT(name,' ',detail))-CHAR_LENGTH('\(params.string)')"))
+//            .sort(\.$name)
+            .sort(\.$id) /// have this to ensure we always have a uniquely identifiable sort order (to disallow overlaps in pagination)
             .offset(weNeedToStartAt)
             .limit(whatWillBeProvided)
             .all()
@@ -75,6 +76,7 @@ class SearchCoordinator {
             let previousTotalCount = totalCount
             totalCount += count
 
+            print("🔎 \(name) has \(count) matches")
             /// If we have enough, stop getting the results (we're still getting the total count though)
             guard position < params.endIndex else { continue }
 
