@@ -8,44 +8,57 @@ protocol SearchResultsProvider {
     var params: ServerFoodSearchParams { get }
     var db: Database { get }
     var query: QueryBuilder<Food> { get }
-    func count() async throws -> Int
-    func results(startingFrom: Int, previousResults: [FoodSearchResult]) async throws -> Page<FoodSearchResult>
+    func count(previousResults: [FoodSearchResult]) async throws -> Int
+    func results(startingFrom: Int, totalCount: Int, previousResults: [FoodSearchResult]) async throws -> [FoodSearchResult]
+}
+
+extension Array where Element == FoodSearchResult {
+    var ids: [UUID] {
+        map { $0.id }
+    }
 }
 
 extension SearchResultsProvider {
     
-    func count() async throws -> Int {
-        try await query.count()
+    func count(previousResults: [FoodSearchResult]) async throws -> Int {
+        try await query
+            .filter(\.$id !~ previousResults.ids)
+            .count()
     }
 
-    func results(startingFrom position: Int, previousResults: [FoodSearchResult]) async throws -> Page<FoodSearchResult> {
+    func results(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult]) async throws -> [FoodSearchResult] {
         print("** \(name) **")
-        let count = try await count()
-
-        let weNeedToStartAt = previousResults.count == 0 ? position : 0
+        let count = try await count(previousResults: previousResults)
+        
+//        let weNeedToStartAt = isFirstSearch ? position : 0
+        let weNeedToStartAt = position - totalCount
         print ("    🔍 weNeedToStartAt: \(weNeedToStartAt)")
         let whatIsNeeded = params.per - previousResults.count
         print ("    🔍 whatIsNeeded: \(whatIsNeeded)")
-        let whatCanBeProvided = min(params.per, count - weNeedToStartAt)
+        let whatCanBeProvided = max(min(params.per, count - weNeedToStartAt), 0)
         print ("    🔍 whatCanBeProvided: \(whatCanBeProvided)")
         let whatWillBeProvided = min(whatIsNeeded, whatCanBeProvided)
         print ("    🟪 whatWillBeProvided: \(whatWillBeProvided), starting from: \(weNeedToStartAt)")
 
+        guard whatWillBeProvided > 0 else {
+            return []
+        }
+        
         let endPosition = position + whatWillBeProvided
 
 //        let endIndex = min(params.endIndex, (count + previousResults.count) - 1)
         print ("    🔍 Filling allPositions: \(position)...\(endPosition) with localPositions: \(weNeedToStartAt)...\(weNeedToStartAt + whatWillBeProvided)")
 
-        let countThatWeNeed = endPosition - position
-        
-        let internalPosition = position - previousResults.count
-        let per = min(countThatWeNeed, params.per)
-        let page = previousResults.count == 0 ? (internalPosition / per) + 1 : 1
-        print ("    Getting page \(page) per \(per)")
+        /// For 2, 100, Chicken—it should be
+        /// Gett
+        print ("    Getting \(whatWillBeProvided) foods offset by \(weNeedToStartAt)")
         return try await query
+            .filter(\.$id !~ previousResults.ids)
             .sort(\.$name)
             .sort(\.$id)
-            .paginate(PageRequest(page: page, per: per))
+            .offset(weNeedToStartAt)
+            .limit(whatWillBeProvided)
+            .all()
             .map { FoodSearchResult($0) }
     }
 }
@@ -94,18 +107,23 @@ class SearchCoordinator {
         ]
         
         var allResults: [FoodSearchResult] = []
-        var count = 0
-        for search in searches {
-            count += try await search.count()
+        var totalCount = 0
+        for index in searches.indices {
+            let search = searches[index]
             
-            /// If we have enough, stop getting the results (we'll still keep getting the total count though)
-            if position < params.endIndex {
-                let results = try await search.results(startingFrom: position, previousResults: allResults).items
-                allResults += results
-                position += results.count
-            }
+            let count = try await search.count(previousResults: allResults)
+            let previousTotalCount = totalCount
+            totalCount += count
+
+            /// If we have enough, stop getting the results (we're still getting the total count though)
+            guard position < params.endIndex else { continue }
+
+            let results = try await search.results(startingFrom: position, totalCount: previousTotalCount, previousResults: allResults)
+            allResults += results
+            
+            position += results.count
         }
-        let metadata = PageMetadata(page: params.page, per: params.per, total: count)
+        let metadata = PageMetadata(page: params.page, per: params.per, total: totalCount)
         return Page(items: allResults, metadata: metadata)
     }
 }
