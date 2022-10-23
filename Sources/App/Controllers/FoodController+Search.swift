@@ -2,23 +2,11 @@ import Fluent
 import Vapor
 import PrepUnits
 
-protocol SearchResultsProvider {
-    
-    var name: String { get }
-    var params: ServerFoodSearchParams { get }
-    var db: Database { get }
-    var query: QueryBuilder<Food> { get }
-    func count(previousResults: [FoodSearchResult]) async throws -> Int
-    func results(startingFrom: Int, totalCount: Int, previousResults: [FoodSearchResult]) async throws -> [FoodSearchResult]
-}
-
-extension Array where Element == FoodSearchResult {
-    var ids: [UUID] {
-        map { $0.id }
-    }
-}
-
-extension SearchResultsProvider {
+struct SearchResultsProvider {
+    let name: String
+    let params: ServerFoodSearchParams
+    let db: Database
+    let query: QueryBuilder<Food>
     
     func count(previousResults: [FoodSearchResult]) async throws -> Int {
         try await query
@@ -63,30 +51,6 @@ extension SearchResultsProvider {
     }
 }
 
-struct SearchNamePrefix: SearchResultsProvider {
-    
-    let name = "SearchNamePrefix"
-    let params: ServerFoodSearchParams
-    let db: Database
- 
-    var query: QueryBuilder<Food> {
-        Food.query(on: db)
-            .filter(\.$name, .custom("ILIKE"), "\(params.string)%")
-    }
-}
-
-struct SearchDetailPrefix: SearchResultsProvider {
-    
-    let name = "SearchDetailPrefix"
-    let params: ServerFoodSearchParams
-    let db: Database
- 
-    var query: QueryBuilder<Food> {
-        Food.query(on: db)
-            .filter(\.$detail, .custom("ILIKE"), "\(params.string)%")
-    }
-}
-
 class SearchCoordinator {
     let params: ServerFoodSearchParams
     let db: Database
@@ -101,24 +65,20 @@ class SearchCoordinator {
     }
     
     func search() async throws -> Page<FoodSearchResult> {
-        let searches: [SearchResultsProvider] = [
-            SearchNamePrefix(params: params, db: db),
-            SearchDetailPrefix(params: params, db: db),
-        ]
         
         var allResults: [FoodSearchResult] = []
         var totalCount = 0
-        for index in searches.indices {
-            let search = searches[index]
-            
-            let count = try await search.count(previousResults: allResults)
+        
+        for (name, query) in queries(string: params.string, db: db) {
+            let provider = SearchResultsProvider(name: name, params: params, db: db, query: query)
+            let count = try await provider.count(previousResults: allResults)
             let previousTotalCount = totalCount
             totalCount += count
 
             /// If we have enough, stop getting the results (we're still getting the total count though)
             guard position < params.endIndex else { continue }
 
-            let results = try await search.results(startingFrom: position, totalCount: previousTotalCount, previousResults: allResults)
+            let results = try await provider.results(startingFrom: position, totalCount: previousTotalCount, previousResults: allResults)
             allResults += results
             
             position += results.count
@@ -126,6 +86,8 @@ class SearchCoordinator {
         let metadata = PageMetadata(page: params.page, per: params.per, total: totalCount)
         return Page(items: allResults, metadata: metadata)
     }
+    
+
 }
 
 extension FoodController {
@@ -148,3 +110,9 @@ extension ServerFoodSearchParams {
 
 extension ServerFoodSearchParams: Content { }
 extension FoodSearchResult: Content { }
+
+extension Array where Element == FoodSearchResult {
+    var ids: [UUID] {
+        map { $0.id }
+    }
+}
