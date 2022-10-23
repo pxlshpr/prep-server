@@ -8,15 +8,9 @@ struct SearchResultsProvider {
     let db: Database
     let query: QueryBuilder<Food>
     
-    func count(previousResults: [FoodSearchResult]) async throws -> Int {
-        try await query
-            .filter(\.$id !~ previousResults.ids)
-            .count()
-    }
-
-    func results(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult]) async throws -> [FoodSearchResult] {
+    func results(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> [FoodSearchResult] {
         print("** \(name) **")
-        let count = try await count(previousResults: previousResults)
+        let count = try await count(idsToIgnore: idsToIgnore)
         
 //        let weNeedToStartAt = isFirstSearch ? position : 0
         let weNeedToStartAt = position - totalCount
@@ -41,7 +35,7 @@ struct SearchResultsProvider {
         /// Gett
         print ("    Getting \(whatWillBeProvided) foods offset by \(weNeedToStartAt)")
         return try await query
-            .filter(\.$id !~ previousResults.ids)
+            .filter(\.$id !~ idsToIgnore)
 //            .sort(.sql(raw: "CHAR_LENGTH(CONCAT(name,' ',detail))-CHAR_LENGTH('\(params.string)')"))
 //            .sort(\.$name)
             .sort(\.$id) /// have this to ensure we always have a uniquely identifiable sort order (to disallow overlaps in pagination)
@@ -50,6 +44,20 @@ struct SearchResultsProvider {
             .all()
             .map { FoodSearchResult($0) }
     }
+    
+    func allResultIds(ignoring idsToIgnore: [UUID]) async throws -> [UUID] {
+        try await query
+            .filter(\.$id !~ idsToIgnore)
+            .all()
+            .map { $0.id! }
+    }
+    
+    func count(idsToIgnore: [UUID]) async throws -> Int {
+        try await query
+            .filter(\.$id !~ idsToIgnore)
+            .count()
+    }
+
 }
 
 class SearchCoordinator {
@@ -67,26 +75,32 @@ class SearchCoordinator {
     
     func search() async throws -> Page<FoodSearchResult> {
         
-        var allResults: [FoodSearchResult] = []
+        var idsToIgnore: [UUID] = []
+        var candidateResults: [FoodSearchResult] = []
         var totalCount = 0
         
         for (name, query) in queries(string: params.string, db: db) {
             let provider = SearchResultsProvider(name: name, params: params, db: db, query: query)
-            let count = try await provider.count(previousResults: allResults)
+            let count = try await provider.count(idsToIgnore: idsToIgnore)
             let previousTotalCount = totalCount
             totalCount += count
 
             print("🔎 \(name) has \(count) matches")
             /// If we have enough, stop getting the results (we're still getting the total count though)
             guard position < params.endIndex else { continue }
-
-            let results = try await provider.results(startingFrom: position, totalCount: previousTotalCount, previousResults: allResults)
-            allResults += results
             
+            let preFetchedIdsToIgnore = try await provider.allResultIds(ignoring: [])
+
+            let results = try await provider.results(startingFrom: position, totalCount: previousTotalCount, previousResults: candidateResults, idsToIgnore: idsToIgnore)
+            candidateResults += results
+
+            idsToIgnore += preFetchedIdsToIgnore
+            print("✨ idsToIgnore: \(idsToIgnore.count)")
+
             position += results.count
         }
         let metadata = PageMetadata(page: params.page, per: params.per, total: totalCount)
-        return Page(items: allResults, metadata: metadata)
+        return Page(items: candidateResults, metadata: metadata)
     }
     
 
