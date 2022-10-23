@@ -53,23 +53,12 @@ struct FoodController: RouteCollection {
     
     func index(req: Request) async throws -> Page<FoodSearchResult> {
         try await Food.query(on: req.db)
-            .sort(\.$name)
+            .sort(\.$id)
             .paginate(for: req)
             .map({ food in
                 FoodSearchResult(food)
             })
-        
-//        try await Planet.query(on: req.db).paginate(for: req)
-//        return FoodSearchResponse(results: results, page: 1, hasMorePages: false)
     }
-//
-//
-//    func delete(req: Request) async throws -> HTTPStatus {
-//        guard let food = try await Food.find(req.parameters.get("foodId"), on: req.db) else {
-//            throw Abort(.notFound)
-//        }
-//        try await food.delete(on: req.db)
-//        return .noContent
 //    }
     
     func foodForBarcode(_ payload: String, in db: Database) async throws -> Food? {
