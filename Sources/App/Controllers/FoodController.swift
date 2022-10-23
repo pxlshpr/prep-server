@@ -7,7 +7,7 @@ struct FoodController: RouteCollection {
         let foods = routes.grouped("foods")
         foods.on(.POST, "image", body: .collect(maxSize: "20mb"), use: image)
         foods.get(use: index)
-        foods.get("search", use: search)
+        foods.post("search", use: search)
         foods.get("barcode", ":payload", use: searchBarcode)
         foods.post(use: create)
         

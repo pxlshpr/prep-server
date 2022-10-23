@@ -95,7 +95,7 @@ class SearchCoordinator {
 extension FoodController {
     
     func search(req: Request) async throws -> Page<FoodSearchResult> {
-        let params = try req.query.decode(ServerFoodSearchParams.self)
+        let params = try req.content.decode(ServerFoodSearchParams.self)
         return try await SearchCoordinator(params: params, db: req.db).search()
     }
 }
