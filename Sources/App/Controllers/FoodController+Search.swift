@@ -165,15 +165,12 @@ class SearchCoordinator {
             let provider = SearchResultsProvider(name: name, params: params, db: db, query: query)
 
             var start = CFAbsoluteTimeGetCurrent()
-            let preFetchedIdsToIgnore = try await provider.allResultIds(ignoring: [])
-            print ("  ⏱ getting preFetchedIdsToIgnore took \(CFAbsoluteTimeGetCurrent()-start)s")
-
-            start = CFAbsoluteTimeGetCurrent()
+            
             let results = try await provider.results2(startingFrom: position, totalCount: totalCount, previousResults: candidateResults, idsToIgnore: idsToIgnore)
             print ("  ⏱ results took \(CFAbsoluteTimeGetCurrent()-start)s")
             candidateResults += results.picked
             totalCount += results.count
-            idsToIgnore += preFetchedIdsToIgnore
+            idsToIgnore += results.picked.map { $0.id }
             position += results.picked.count
             
             /// If we have enough, stop getting the results (we're still getting the total count though)
