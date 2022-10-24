@@ -165,7 +165,7 @@ class SearchCoordinator {
             print ("  ⏱ getting preFetchedIdsToIgnore took \(CFAbsoluteTimeGetCurrent()-start)s")
 
             start = CFAbsoluteTimeGetCurrent()
-            let results = try await provider.results3(startingFrom: position, totalCount: totalCount, previousResults: candidateResults, idsToIgnore: idsToIgnore)
+            let results = try await provider.results2(startingFrom: position, totalCount: totalCount, previousResults: candidateResults, idsToIgnore: idsToIgnore)
             print ("  ⏱ results took \(CFAbsoluteTimeGetCurrent()-start)s")
             candidateResults += results.picked
             totalCount += results.count
