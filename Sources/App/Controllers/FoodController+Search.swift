@@ -45,6 +45,52 @@ struct SearchResultsProvider {
             .map { FoodSearchResult($0) }
     }
     
+    func results2(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> (picked: [FoodSearchResult], count: Int)
+    {
+        print("** \(name) **")
+        
+        let weNeedToStartAt = position - totalCount
+        let whatIsNeeded = params.per - previousResults.count
+        print ("    🔍 Getting up to \(whatIsNeeded) foods offset by \(weNeedToStartAt)")
+        let results = try await query
+            .filter(\.$id !~ idsToIgnore)
+            .sort(\.$id) /// have this to ensure we always have a uniquely identifiable sort order (to disallow overlaps in pagination)
+            .all()
+            .map { FoodSearchResult($0) }
+        let endIndex = min((weNeedToStartAt + whatIsNeeded), results.count)
+        print ("    🔍 Got back \(results.count) results, returning slice \(weNeedToStartAt)..<\(endIndex)")
+        let slice = results[weNeedToStartAt..<endIndex]
+        return (Array(slice), results.count)
+    }
+    
+    func results3(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> (picked: [FoodSearchResult], count: Int)
+    {
+        print("🔍 \(name)")
+        
+        let weNeedToStartAt = position - totalCount
+        let whatIsNeeded = params.per - previousResults.count
+        print ("    🔍 Getting up to \(whatIsNeeded) foods offset by \(weNeedToStartAt)")
+        
+        var start = CFAbsoluteTimeGetCurrent()
+        let count = try await query
+            .filter(\.$id !~ idsToIgnore)
+            .count()
+        print ("    ⏱ count took: \(CFAbsoluteTimeGetCurrent()-start)s")
+
+        start = CFAbsoluteTimeGetCurrent()
+        let results = try await query
+            .filter(\.$id !~ idsToIgnore)
+            .sort(\.$id) /// have this to ensure we always have a uniquely identifiable sort order (to disallow overlaps in pagination)
+            .offset(weNeedToStartAt)
+            .limit(whatIsNeeded)
+            .all()
+            .map { FoodSearchResult($0) }
+        print ("    ⏱ results took: \(CFAbsoluteTimeGetCurrent()-start)s")
+
+        print ("    🔍 Got \(results.count) foods of what we need (from a total of \(count)")
+        return (results, count)
+    }
+    
     func allResultIds(ignoring idsToIgnore: [UUID]) async throws -> [UUID] {
         try await query
             .filter(\.$id !~ idsToIgnore)
@@ -103,14 +149,45 @@ class SearchCoordinator {
         return Page(items: candidateResults, metadata: metadata)
     }
     
+    func search2() async throws -> Page<FoodSearchResult> {
+        
+        var idsToIgnore: [UUID] = []
+        var candidateResults: [FoodSearchResult] = []
+        var totalCount = 0
+        
+        let mainStart = CFAbsoluteTimeGetCurrent()
+        for (name, query) in queries(string: params.string, db: db) {
+            let provider = SearchResultsProvider(name: name, params: params, db: db, query: query)
 
+            var start = CFAbsoluteTimeGetCurrent()
+            let preFetchedIdsToIgnore = try await provider.allResultIds(ignoring: [])
+            print ("  ⏱ getting preFetchedIdsToIgnore took \(CFAbsoluteTimeGetCurrent()-start)s")
+
+            start = CFAbsoluteTimeGetCurrent()
+            let results = try await provider.results3(startingFrom: position, totalCount: totalCount, previousResults: candidateResults, idsToIgnore: idsToIgnore)
+            print ("  ⏱ results took \(CFAbsoluteTimeGetCurrent()-start)s")
+            candidateResults += results.picked
+            totalCount += results.count
+            idsToIgnore += preFetchedIdsToIgnore
+            position += results.picked.count
+            
+            /// If we have enough, stop getting the results (we're still getting the total count though)
+            guard position < params.endIndex else {
+                print("✅ Have enough results, ending early (\(CFAbsoluteTimeGetCurrent()-mainStart)s)")
+                print(" ")
+                break
+            }
+        }
+        let metadata = PageMetadata(page: params.page, per: params.per, total: 1000000)
+        return Page(items: candidateResults, metadata: metadata)
+    }
 }
 
 extension FoodController {
     
     func search(req: Request) async throws -> Page<FoodSearchResult> {
         let params = try req.content.decode(ServerFoodSearchParams.self)
-        return try await SearchCoordinator(params: params, db: req.db).search()
+        return try await SearchCoordinator(params: params, db: req.db).search2()
     }
 }
 
