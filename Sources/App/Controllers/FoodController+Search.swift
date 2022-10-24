@@ -1,6 +1,7 @@
 import Fluent
 import Vapor
 import PrepUnits
+import CoreFoundation
 
 struct SearchResultsProvider {
     let name: String
