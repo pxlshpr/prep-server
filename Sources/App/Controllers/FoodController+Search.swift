@@ -62,6 +62,11 @@ struct SearchResultsProvider {
             .map { FoodSearchResult($0) }
         print ("    ⏱ results took: \(CFAbsoluteTimeGetCurrent()-start)s")
         
+        guard weNeedToStartAt < results.count else {
+            print ("    🔍 Got back \(results.count) results, return nothing since \(weNeedToStartAt) is past the end index")
+            return ([], 0)
+        }
+        
         let endIndex = min((weNeedToStartAt + whatIsNeeded), results.count)
         print ("    🔍 Got back \(results.count) results, returning slice \(weNeedToStartAt)..<\(endIndex)")
         let slice = results[weNeedToStartAt..<endIndex]
@@ -164,7 +169,7 @@ class SearchCoordinator {
         for (name, query) in queries(string: params.string, db: db) {
             let provider = SearchResultsProvider(name: name, params: params, db: db, query: query)
 
-            var start = CFAbsoluteTimeGetCurrent()
+            let start = CFAbsoluteTimeGetCurrent()
             
             let results = try await provider.results2(startingFrom: position, totalCount: totalCount, previousResults: candidateResults, idsToIgnore: idsToIgnore)
             print ("  ⏱ results took \(CFAbsoluteTimeGetCurrent()-start)s")
