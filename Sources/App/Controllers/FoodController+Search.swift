@@ -46,7 +46,7 @@ struct SearchResultsProvider {
             .map { FoodSearchResult($0) }
     }
     
-    func results2(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> (picked: [FoodSearchResult], count: Int)
+    func results2(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> (picked: [FoodSearchResult], count: Int, allIds: [UUID])
     {
         print("🔍 \(name)")
 
@@ -64,13 +64,13 @@ struct SearchResultsProvider {
         
         guard weNeedToStartAt < results.count else {
             print ("    🔍 Got back \(results.count) results, return nothing since \(weNeedToStartAt) is past the end index")
-            return ([], 0)
+            return ([], 0, [])
         }
         
         let endIndex = min((weNeedToStartAt + whatIsNeeded), results.count)
         print ("    🔍 Got back \(results.count) results, returning slice \(weNeedToStartAt)..<\(endIndex)")
         let slice = results[weNeedToStartAt..<endIndex]
-        return (Array(slice), results.count)
+        return (Array(slice), results.count, results.map { $0.id })
     }
     
     func results3(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> (picked: [FoodSearchResult], count: Int)
@@ -175,7 +175,7 @@ class SearchCoordinator {
             print ("  ⏱ results took \(CFAbsoluteTimeGetCurrent()-start)s")
             candidateResults += results.picked
             totalCount += results.count
-            idsToIgnore += results.picked.map { $0.id }
+            idsToIgnore += results.allIds
             position += results.picked.count
             
             /// If we have enough, stop getting the results (we're still getting the total count though)
