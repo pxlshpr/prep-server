@@ -74,9 +74,10 @@ struct FoodController: RouteCollection {
     
     func foodsForIds(req: Request) async throws -> [Food] {
         let params = try req.content.decode(PostParamsFoodsForIds.self)
-        return try await Food.query(on: req.db)
+        let foods = try await Food.query(on: req.db)
             .filter(\.$id ~~ params.ids)
             .all()
+        return foods
     }
 }
 
