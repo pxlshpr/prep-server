@@ -88,7 +88,10 @@ extension FoodSearchResult {
             name: food.name,
             emoji: food.emoji,
             detail: food.detail,
-            brand: food.brand
+            brand: food.brand,
+            carb: food.nutrients.carb,
+            fat: food.nutrients.fat,
+            protein: food.nutrients.protein
         )
     }
 }
