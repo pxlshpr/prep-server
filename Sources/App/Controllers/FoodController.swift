@@ -10,7 +10,7 @@ struct FoodController: RouteCollection {
         foods.post("search", use: search)
         foods.get("barcode", ":payload", use: searchBarcode)
         foods.post(use: create)
-        
+        foods.post("ids", use: foodsForIds)
         //        foods.group(":foodId") { food in
         //            food.delete(use: delete)
         //        }
@@ -71,6 +71,17 @@ struct FoodController: RouteCollection {
             .filter(Barcode.self, \.$id == payload)
             .first()
     }
+    
+    func foodsForIds(req: Request) async throws -> [Food] {
+        let params = try req.content.decode(PostParamsFoodsForIds.self)
+        return try await Food.query(on: req.db)
+            .filter(\.$id ~~ params.ids)
+            .all()
+    }
+}
+
+struct PostParamsFoodsForIds: Codable {
+    let ids: [UUID]
 }
 
 extension FoodSearchResult {
