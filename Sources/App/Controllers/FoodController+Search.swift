@@ -48,16 +48,20 @@ struct SearchResultsProvider {
     
     func results2(startingFrom position: Int, totalCount: Int, previousResults: [FoodSearchResult], idsToIgnore: [UUID]) async throws -> (picked: [FoodSearchResult], count: Int)
     {
-        print("** \(name) **")
-        
+        print("🔍 \(name)")
+
         let weNeedToStartAt = position - totalCount
         let whatIsNeeded = params.per - previousResults.count
         print ("    🔍 Getting up to \(whatIsNeeded) foods offset by \(weNeedToStartAt)")
+        
+        let start = CFAbsoluteTimeGetCurrent()
         let results = try await query
             .filter(\.$id !~ idsToIgnore)
             .sort(\.$id) /// have this to ensure we always have a uniquely identifiable sort order (to disallow overlaps in pagination)
             .all()
             .map { FoodSearchResult($0) }
+        print ("    ⏱ results took: \(CFAbsoluteTimeGetCurrent()-start)s")
+        
         let endIndex = min((weNeedToStartAt + whatIsNeeded), results.count)
         print ("    🔍 Got back \(results.count) results, returning slice \(weNeedToStartAt)..<\(endIndex)")
         let slice = results[weNeedToStartAt..<endIndex]
