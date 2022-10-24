@@ -24,6 +24,9 @@ struct FoodController: RouteCollection {
     
     func create(req: Request) async throws -> Food {
         let foodForm = try req.content.decode(FoodForm.self)
+        print("__________________")
+        print("Processing form:")
+        print(foodForm)
         guard let foodId = foodForm.food.id else {
             throw APIError.missingFoodId
         }
