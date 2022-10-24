@@ -11,6 +11,7 @@ struct FoodController: RouteCollection {
         foods.get("barcode", ":payload", use: searchBarcode)
         foods.post(use: create)
         foods.post("ids", use: foodsForIds)
+        foods.post("barcodes", use: barcodesSearch)
         //        foods.group(":foodId") { food in
         //            food.delete(use: delete)
         //        }
@@ -44,6 +45,14 @@ struct FoodController: RouteCollection {
         return foodForm.food
     }
     
+    func barcodesSearch(req: Request) async throws -> Food {
+        let params = try req.content.decode(PostParamsBarcodes.self)
+        guard let food = try await firstFoodForBarcodes(params.payloads, in: req.db) else {
+            throw APIError.foodNotFound
+        }
+        return food
+    }
+    
     func searchBarcode(req: Request) async throws -> Food {
         guard let barcode = req.parameters.get("payload") else {
             throw APIError.missingBarcode
@@ -71,7 +80,19 @@ struct FoodController: RouteCollection {
             .filter(Barcode.self, \.$id == payload)
             .first()
     }
-    
+
+    func firstFoodForBarcodes(_ payloads: [String], in db: Database) async throws -> Food? {
+        try await Food.query(on: db)
+            .join(Barcode.self, on: \Food.$id == \Barcode.$food.$id)
+            .group(.or) { query in
+                for payload in payloads {
+                    query
+                        .filter(Barcode.self, \.$id == payload)
+                }
+            }
+            .first()
+    }
+
     func foodsForIds(req: Request) async throws -> [Food] {
         let params = try req.content.decode(PostParamsFoodsForIds.self)
         let foods = try await Food.query(on: req.db)
