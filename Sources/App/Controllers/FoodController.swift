@@ -80,10 +80,6 @@ struct FoodController: RouteCollection {
     }
 }
 
-struct PostParamsFoodsForIds: Codable {
-    let ids: [UUID]
-}
-
 extension FoodSearchResult {
     init(_ food: Food) {
         self.init(
