@@ -12,7 +12,7 @@ struct UserFoodController: RouteCollection {
         
         let createForm = try req.content.decode(UserFoodCreateForm.self)
         
-        guard let userFood = try UserFood(createForm) else {
+        guard let userFood = try await UserFood(createForm, for: req.db) else {
             return "Good"
         }
         
@@ -35,4 +35,8 @@ struct UserFoodController: RouteCollection {
 //        return foodForm.food
     }
     
+}
+
+enum UserFoodCreateError: Error {
+    case formError(UserFoodCreateFormError)
 }

@@ -20,8 +20,7 @@ struct CreateUserFood: AsyncMigration {
             .field("image_ids", .array(of: .uuid))
         
             .field("status", .int16, .required)
-            .field("spawned_food_id", .uuid, .references(UserFood.schema, .id))
-            .field("updates", .array(of: .json), .required)
+            .field("changes", .array(of: .json), .required)
             .field("use_count_others", .int32, .required)
             .field("use_count_owner", .int32, .required)
 
@@ -30,6 +29,8 @@ struct CreateUserFood: AsyncMigration {
             .field("deleted_at", .double)
             .field("deleted_for_owner_at", .double)
 
+            .field("spawned_user_food_id", .uuid, .references(UserFood.schema, .id))
+            .field("spawned_database_food_id", .uuid, .references(DatabaseFood.schema, .id))
             .field("user_id", .uuid, .references(User.schema, .id), .required)
 
             .create()

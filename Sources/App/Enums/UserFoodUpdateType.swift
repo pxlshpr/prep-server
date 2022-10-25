@@ -1,6 +1,6 @@
 import Foundation
 
-public enum UserFoodUpdateType: String, Codable {
+public enum UserFoodChangeType: String, Codable {
     case statusChange
     
     /// Used to indicate that a combination of front-facing fields and metadata were updated

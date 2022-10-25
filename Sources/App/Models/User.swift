@@ -10,8 +10,8 @@ final class User: Model, Content {
     @Field(key: "name") var name: String
     init() { }
 
-    init(id: UUID? = nil, name: String) {
-        self.id = id
-        self.name = name
+    init(_ form: UserCreateForm) {
+        self.id = UUID()
+        self.name = form.name
     }
 }
