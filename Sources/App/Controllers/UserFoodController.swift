@@ -10,9 +10,13 @@ struct UserFoodController: RouteCollection {
     
     func create(req: Request) async throws -> String {
         
-        let foodForm = try req.content.decode(UserFoodCreateForm.self)
+        let createForm = try req.content.decode(UserFoodCreateForm.self)
         
-        print("We here with: \(foodForm.name)")
+        guard let userFood = try UserFood(createForm) else {
+            return "Good"
+        }
+        
+        print("We here with: \(createForm.name)")
         
         return ""
 //        guard let foodId = foodForm.food.id else {
