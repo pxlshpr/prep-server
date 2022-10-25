@@ -10,5 +10,5 @@ func routes(_ app: Application) throws {
         "Hello, world!"
     }
 
-//    try app.register(collection: FoodController())
+    try app.register(collection: UserFoodController())
 }

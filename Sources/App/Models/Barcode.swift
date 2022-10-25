@@ -19,4 +19,11 @@ final class Barcode: Model, Content {
         self.$userFood.id = userFoodId
         self.$databaseFood.id = databaseFoodId
     }
+    
+    init(barcode: FoodBarcode, userFoodId: UserFood.IDValue? = nil, databaseFoodId: DatabaseFood.IDValue? = nil) {
+        self.id = barcode.payload
+        self.symbology = barcode.symbology
+        self.$userFood.id = userFoodId
+        self.$databaseFood.id = databaseFoodId
+    }
 }

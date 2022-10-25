@@ -86,7 +86,7 @@ public struct FoodNutrient: Codable {
      */
     public var usdaType: Int16
     public var amount: Double
-    public var unit: NutrientUnit
+    public var nutrientUnit: NutrientUnit
 }
 
 public struct FoodAmountWithUnit: Codable {
