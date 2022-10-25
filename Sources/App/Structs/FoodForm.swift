@@ -1,6 +1,6 @@
 import PrepUnits
 
-struct FoodForm: Codable {
-    var food: Food
+struct UserFoodForm: Codable {
+    var food: UserFood
     var barcodes: [ServerBarcode]
 }
