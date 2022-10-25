@@ -1,7 +1,6 @@
 import Fluent
 import Vapor
 import PrepDataTypes
-import SwiftSugar
 
 final class UserFood: Model, Content {
     static let schema = "user_foods"
@@ -73,12 +72,28 @@ final class UserFood: Model, Content {
         }
 
         /// Check that the provided `userId` is for an existing user
-        guard let user = try await User.find(form.userId, on: db) else {
+        guard let _ = try await User.find(form.userId, on: db) else {
             throw UserFoodCreateFormError.nonExistentUser
         }
         
-        //MARK: Now we can create the UserFood
+        /// Make sure we don't have any repeating barcodes
+        guard form.barcodes.map({ $0.payload }).isDistinct() else {
+            throw UserFoodCreateFormError.duplicateBarcodes
+        }
         
+        
+        /// For each barcode
+        for barcode in form.barcodes {
+            /// Validate it first
+            try barcode.validate()
+            
+            /// Check that it doesn't already exist
+            if let _ = try await Barcode.find(barcode.payload, on: db) {
+                throw UserFoodCreateFormError.existingBarcode
+            }
+        }
+        
+        //MARK: Now we can create the UserFood
         self.name = form.name
         self.emoji = form.emoji
         self.detail = form.detail
@@ -100,6 +115,6 @@ final class UserFood: Model, Content {
         self.numberOfUsesByOthers = 0
         
         self.createdAt = Date()
-        self.updatedAt = Date()        
+        self.updatedAt = Date()
     }
 }

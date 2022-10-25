@@ -11,8 +11,8 @@ let package = Package(
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.0.0"),
-        .package(url: "https://github.com/pxlshpr/PrepDataTypes", from: "0.0.4"),
-        .package(url: "https://github.com/pxlshpr/SwiftSugar", from: "0.0.69"),
+        .package(url: "https://github.com/pxlshpr/PrepDataTypes", from: "0.0.7"),
+//        .package(url: "https://github.com/pxlshpr/SwiftSugar", from: "0.0.72"),
     ],
     targets: [
         .target(
@@ -22,7 +22,7 @@ let package = Package(
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "PrepDataTypes", package: "prepdatatypes"),
-                .product(name: "SwiftSugar", package: "swiftsugar"),
+//                .product(name: "SwiftSugar", package: "swiftsugar"),
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of
