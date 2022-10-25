@@ -15,8 +15,12 @@ public func configure(_ app: Application) throws {
         database: Environment.get("DATABASE_NAME") ?? "prep"
     ), as: .psql)
 
-    app.migrations.add(CreateFood())
+    app.migrations.add(CreateUser())
+    app.migrations.add(CreateDatabaseFood())
+    app.migrations.add(CreateUserFood())
     app.migrations.add(CreateBarcode())
+    app.migrations.add(CreateTokenAward())
+    app.migrations.add(CreateTokenRedemption())
 
     app.http.server.configuration.port = 8083
 

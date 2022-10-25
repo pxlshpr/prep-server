@@ -1,12 +1,12 @@
 import Fluent
 import Vapor
-import PrepUnits
+import PrepDataTypes
 
 final class Barcode: Model, Content {
     static let schema = "barcodes"
     
     @ID(custom: "payload", generatedBy: .user) var id: String?
-    @Enum(key: "symbology") var symbology: BarcodeSymbology
+    @Field(key: "symbology") var symbology: BarcodeSymbology
     
     @OptionalParent(key: "user_food_id") var userFood: UserFood?
     @OptionalParent(key: "database_food_id") var databaseFood: DatabaseFood?

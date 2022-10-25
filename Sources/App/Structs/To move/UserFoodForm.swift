@@ -1,6 +1,6 @@
-import PrepUnits
+import PrepDataTypes
 
 struct UserFoodForm: Codable {
     var food: UserFood
-    var barcodes: [ServerBarcode]
+    var barcodes: [FoodBarcode]
 }

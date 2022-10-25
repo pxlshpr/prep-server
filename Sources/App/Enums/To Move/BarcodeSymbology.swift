@@ -1,7 +1,7 @@
 import Foundation
 
-enum BarcodeSymbology: String, Codable {
-    case aztec
+public enum BarcodeSymbology: Int16, Codable {
+    case aztec = 1
     case code39
     case code39Checksum
     case code39FullASCII

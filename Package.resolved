@@ -82,12 +82,12 @@
       }
     },
     {
-      "identity" : "prepunits",
+      "identity" : "prepdatatypes",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pxlshpr/PrepUnits",
+      "location" : "https://github.com/pxlshpr/PrepDataTypes",
       "state" : {
-        "revision" : "6a0eceae511c4c2b3d01de68fedd60182e772037",
-        "version" : "0.0.135"
+        "revision" : "c583d32a291cd4a47b28008abd87aa282bf88fb7",
+        "version" : "0.0.3"
       }
     },
     {
