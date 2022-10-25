@@ -8,17 +8,12 @@ struct UserFoodController: RouteCollection {
         foods.post(use: create)
     }
     
-    func create(req: Request) async throws -> String {
+    func create(req: Request) async throws -> UserFood {
         
         let createForm = try req.content.decode(UserFoodCreateForm.self)
-        
-        guard let userFood = try await UserFood(createForm, for: req.db) else {
-            return "Good"
-        }
-        
-        print("We here with: \(createForm.name)")
-        
-        return ""
+        let userFood = try await UserFood(createForm, for: req.db)
+        try await userFood.save(on: req.db)
+        return userFood
 //        guard let foodId = foodForm.food.id else {
 //            throw APIError.missingFoodId
 //        }

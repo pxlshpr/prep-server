@@ -40,7 +40,7 @@ final class UserFood: Model, Content {
     
     init() { }
 
-    init?(_ form: UserFoodCreateForm, for db: Database) async throws {
+    init(_ form: UserFoodCreateForm, for db: Database) async throws {
         
         do {
             try await form.validate()
@@ -79,6 +79,27 @@ final class UserFood: Model, Content {
         
         //MARK: Now we can create the UserFood
         
-        return nil
+        self.name = form.name
+        self.emoji = form.emoji
+        self.detail = form.detail
+        self.brand = form.brand
+        self.amount = form.amount
+        self.serving = form.serving
+        self.nutrients = form.nutrients
+        self.sizes = form.sizes
+        self.density = form.density
+        self.linkUrl = form.linkUrl
+        self.prefilledUrl = form.prefilledUrl
+        self.imageIds = form.imageIds
+        self.status = form.status
+        
+        self.$user.id = form.userId
+        
+        self.changes = []
+        self.numberOfUsesByOwner = 0
+        self.numberOfUsesByOthers = 0
+        
+        self.createdAt = Date()
+        self.updatedAt = Date()        
     }
 }
