@@ -42,7 +42,7 @@ final class UserFood: Model, Content {
     init(_ form: UserFoodCreateForm, for db: Database) async throws {
         
         do {
-            try await form.validate()
+            try form.validate()
         } catch let formError as UserFoodCreateFormError {
             throw UserFoodCreateError.formError(formError)
         }
@@ -77,20 +77,12 @@ final class UserFood: Model, Content {
         }
         
         /// Make sure we don't have any repeating barcodes
-        guard form.barcodes.map({ $0.payload }).isDistinct() else {
-            throw UserFoodCreateFormError.duplicateBarcodes
-        }
         
         
         /// For each barcode
         for barcode in form.barcodes {
             /// Validate it first
             try barcode.validate()
-            
-            /// Check that it doesn't already exist
-            if let _ = try await Barcode.find(barcode.payload, on: db) {
-                throw UserFoodCreateFormError.existingBarcode
-            }
         }
         
         //MARK: Now we can create the UserFood
